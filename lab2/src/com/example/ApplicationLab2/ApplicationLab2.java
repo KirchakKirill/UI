@@ -2,6 +2,7 @@ package com.example.ApplicationLab2;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -37,6 +38,7 @@ public class ApplicationLab2 extends Application {
         window.setTitle("Input Field Synchronizer");
         window.setMinWidth(550);
         window.setMinHeight(550);
+        window.setResizable(false);
     }
 
     private void initializeUIComponents() {
@@ -101,11 +103,13 @@ public class ApplicationLab2 extends Application {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Window Scaling");
+        dialog.setResizable(false);
 
         GridPane content = new GridPane();
         content.setPadding(new Insets(15));
         content.setVgap(10);
         content.setHgap(10);
+        content.setAlignment(Pos.CENTER); // Центрируем содержимое
 
         Label prompt = new Label("Enter scale factor (0.1-5.0):");
         TextField scaleInput = new TextField();
@@ -115,6 +119,8 @@ public class ApplicationLab2 extends Application {
             }
         });
 
+        HBox buttonContainer = new HBox();
+        buttonContainer.setAlignment(Pos.CENTER); // Центрируем кнопку
         Button apply = createActionButton("Apply", () -> {
             try {
                 double factor = Double.parseDouble(scaleInput.getText());
@@ -124,10 +130,11 @@ public class ApplicationLab2 extends Application {
                 recordActivity("Invalid scale value entered");
             }
         });
+        buttonContainer.getChildren().add(apply);
 
         content.addRow(0, prompt);
         content.addRow(1, scaleInput);
-        content.addRow(2, apply);
+        content.addRow(2, buttonContainer);
 
         dialog.setScene(new Scene(content));
         dialog.showAndWait();
@@ -158,6 +165,7 @@ public class ApplicationLab2 extends Application {
     private void showToggleDialog() {
         Stage dialog = new Stage();
         dialog.setTitle("Field Toggles");
+        dialog.setResizable(false);
 
         VBox toggleContainer = new VBox(8);
         toggleContainer.setPadding(new Insets(10));
@@ -165,6 +173,11 @@ public class ApplicationLab2 extends Application {
         components.forEach((id, comp) -> {
             CheckBox toggle = new CheckBox(comp.field().getText());
             toggle.setFont(Font.font(14));
+
+            // Устанавливаем начальное состояние CheckBox в зависимости от текущего шрифта поля
+            Font currentFont = comp.field().getFont();
+            boolean isBold = currentFont.getStyle().contains("Bold");
+            toggle.setSelected(isBold);
 
             toggle.selectedProperty().addListener((obs, old, selected) -> {
                 if (selected) {
@@ -189,10 +202,13 @@ public class ApplicationLab2 extends Application {
     private void showFieldModifier() {
         Stage dialog = new Stage();
         dialog.setTitle("Manage Fields");
+        dialog.setResizable(false);
 
         VBox controls = new VBox(15);
         controls.setPadding(new Insets(15));
+        controls.setAlignment(Pos.CENTER); // Центрируем содержимое
 
+        // Кнопка Add New Field
         Button addField = createActionButton("Add New Field", () -> {
             currentId++;
             BorderPane root = (BorderPane) mainContainer.getChildren().get(0);
@@ -202,9 +218,18 @@ public class ApplicationLab2 extends Application {
             recordActivity("Added field " + currentId);
         });
 
-        HBox removalPanel = new HBox(10);
+        // Устанавливаем минимальную ширину для кнопки
+        addField.setMinWidth(200);
+
+        // Панель для удаления поля
+        VBox removalPanel = new VBox(10);
+        removalPanel.setAlignment(Pos.CENTER);
+
         TextField fieldIdInput = new TextField();
         fieldIdInput.setPromptText("Enter field ID");
+        // Устанавливаем ширину поля ввода как половину от ширины кнопки
+        fieldIdInput.setMaxWidth(100); // Половина от 200
+
         Button removeField = createActionButton("Remove Field", () -> {
             try {
                 int id = Integer.parseInt(fieldIdInput.getText());
@@ -222,8 +247,9 @@ public class ApplicationLab2 extends Application {
                 recordActivity("Invalid field ID entered");
             }
         });
+        removeField.setMinWidth(200); // Такая же ширина как у Add
 
-        removalPanel.getChildren().addAll(fieldIdInput, removeField);
+        removalPanel.getChildren().addAll(removeField, fieldIdInput); // Поменяли порядок - кнопка сверху
         controls.getChildren().addAll(addField, removalPanel);
 
         dialog.setScene(new Scene(controls));
